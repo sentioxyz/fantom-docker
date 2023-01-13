@@ -1,12 +1,12 @@
-FROM alpine:3.13 as build-stage
+FROM --platform=linux/amd64  alpine:3.17 as build-stage
 
 ARG FANTOM_NETWORK=opera
-ARG GITHUB_BRANCH=release/1.0.2-rc.5
+ARG GITHUB_BRANCH=release/txtracing/1.1.2-rc.5
 ARG GITHUB_URL=https://github.com/Fantom-foundation/go-${FANTOM_NETWORK}.git
 ARG GITHUB_DIR=go-${FANTOM_NETWORK}
 
-ARG GOROOT=/usr/lib/go 
-ARG GOPATH=/go 
+ARG GOROOT=/usr/lib/go
+ARG GOPATH=/go
 ARG PATH=$GOROOT/bin:$GOPATH/bin:/build:$PATH
 
 RUN set -xe; \
@@ -19,9 +19,9 @@ RUN set -xe; \
   # build and copy the binary
   make -j$(nproc); mv build/${FANTOM_NETWORK} /usr/local/bin; \
   # remove our build dependencies
-  rm -rf /go; apk del .build-deps; 
+  rm -rf /go; apk del .build-deps;
 
-FROM alpine:latest as opera
+FROM --platform=linux/amd64 alpine:latest as opera
 
 RUN apk add --no-cache ca-certificates
 
@@ -31,7 +31,7 @@ ENV FANTOM_API=eth,ftm,net,web3
 ENV FANTOM_VERBOSITY=2
 ENV FANTOM_CACHE=4096
 
-# copy the binary 
+# copy the binary
 COPY --from=build-stage /usr/local/bin/${FANTOM_NETWORK} /usr/local/bin/${FANTOM_NETWORK}
 
 COPY run.sh /usr/local/bin

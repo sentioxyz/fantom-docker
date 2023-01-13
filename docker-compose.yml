@@ -1,54 +1,9 @@
 version: '3.4'
 
 services:
-  # https/ssl termination
-  ingress:
-    image: 'ingress'
-    build:
-      context: ingress
-    command:
-      [
-        'sh',
-        '-c',
-        'wait-for.sh $${FANTOM_HOSTNAME:-fantom}:18545 -t 600 -- run.sh',
-      ]
-    restart: always
-    depends_on:
-      - fantom
-    ports:
-      - 443:443
-      - 80:80
-    volumes:
-      - ./volumes/ssl:/etc/nginx/ssl
-      # wait-for.sh
-      - ./wait-for.sh:/usr/local/bin/wait-for.sh
-    env_file:
-      - .env
-    environment:
-      INGRESS_HOSTNAME: ${FANTOM_HOSTNAME:-fantom.doublesharp.com}
-      SSL_CERT: ${FANTOM_HOSTNAME:-fantom.doublesharp.com}-fullchain.pem
-      SSL_KEY: ${FANTOM_HOSTNAME:-fantom.doublesharp.com}-privkey.pem
-      FANTOM_HOST: ${FANTOM_HOST:-fantom}
-
-  letsencrypt:
-    image: 'letsencrypt'
-    build:
-      context: letsencrypt
-    restart: always
-    volumes:
-      - ./volumes/ssl:/etc/nginx/ssl
-      - letsencrypt:/etc/letsencrypt
-    env_file:
-      - .env
-    environment:
-      DOMAIN: ${FANTOM_HOSTNAME:-fantom.doublesharp.com}
-      SSL_PATH: ${SSL_PATH:-/etc/nginx/ssl}
-      CLOUDFLARE_EMAIL: ${CLOUDFLARE_EMAIL}
-      CLOUDFLARE_API_KEY: ${CLOUDFLARE_API_KEY}
-
   fantom:
-    image: 'opera'
-    # image: doublesharp/fantom-opera:latest
+    # image: 'opera'
+    image: us-west1-docker.pkg.dev/sentio-352722/sentio/fantom:latest
     build:
       context: opera
     restart: always
@@ -62,13 +17,13 @@ services:
     volumes:
       - fantom:/root/.opera
       - genesis:/genesis
-    env_file:
-      - .env
+    # env_file:
+    #   - .env
     environment:
-      FANTOM_HOSTNAME: ${FANTOM_HOSTNAME:-fantom.doublesharp.com}
+      # FANTOM_HOSTNAME: ${FANTOM_HOSTNAME:-fantom.doublesharp.com}
       FANTOM_VERBOSITY: ${FANTOM_VERBOSITY:-3}
 
 volumes:
   fantom: {}
   genesis: {}
-  letsencrypt: {}
+  # letsencrypt: {}
